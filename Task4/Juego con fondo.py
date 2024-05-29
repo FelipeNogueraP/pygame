@@ -1,40 +1,39 @@
 import pygame
 import random
 import os
+import sys
 import platform
 
 # Inicializar Pygame
 pygame.init()
 
-# # Función para intentar inicializar el mezclador de sonido con diferentes controladores
-# def init_mixer():
-#     # Definir los controladores según el sistema operativo
-#     system = platform.system()
-#     if system == 'Windows':
-#         # Windows
-#         audio_drivers = ['directsound', 'waveout', 'disk']
-#     elif system == 'Linux':
-#         # Linux
-#         audio_drivers = ['alsa', 'pulseaudio', 'esd', 'arts', 'disk']
-#     elif system == 'Darwin':
-#         # macOS
-#         audio_drivers = ['coreaudio', 'disk']
-#     else:
-#         # Otros (intentar con el controlador por defecto y 'disk')
-#         audio_drivers = ['disk']
-    
-#     for driver in audio_drivers:
-#         try:
-#             os.environ['SDL_AUDIODRIVER'] = driver
-#             pygame.mixer.init()
-#             print(f"Mezclador de sonido inicializado con el controlador: {driver}")
-#             return
-#         except pygame.error as e:
-#             print(f"No se pudo inicializar el mezclador de sonido con el controlador {driver}: {e}")
-#     print("No se pudo inicializar el mezclador de sonido con ningún controlador disponible.")
+# Función para intentar inicializar el mezclador de sonido con diferentes controladores
+def init_mixer():
+    # Definir los controladores para Windows
+    audio_drivers = ['directsound', 'waveout', 'disk']
+    for driver in audio_drivers:
+        try:
+            os.environ['SDL_AUDIODRIVER'] = driver
+            pygame.mixer.init()
+            print(f"Mezclador de sonido inicializado con el controlador: {driver}")
+            return
+        except pygame.error as e:
+            print(f"No se pudo inicializar el mezclador de sonido con el controlador {driver}: {e}")
+    print("No se pudo inicializar el mezclador de sonido con ningún controlador disponible.")
 
-# # Intentar inicializar el mezclador de sonido
-# init_mixer()
+# Intentar inicializar el mezclador de sonido
+init_mixer()
+
+# Función para obtener la ruta del recurso
+def resource_path(relative_path):
+    """ Obtiene la ruta absoluta al recurso, funciona para desarrollo y para el ejecutable """
+    try:
+        # cx_Freeze crea una carpeta temporal y almacena el path en _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 # Definir colores
 NEGRO = (0, 0, 0)
@@ -43,19 +42,19 @@ AZUL = (0, 0, 255)
 VERDE = (0, 255, 0)
 ROJO = (255, 0, 0)
 
-# Ruta base
-base_path = os.path.dirname(__file__)
-
 # Cargar el sonido de explosión
-explosion_sound = pygame.mixer.Sound(os.path.join(base_path, "assets/pinchazo-globo-revienta-.mp3"))
-
+try:
+    explosion_sound = pygame.mixer.Sound(resource_path("assets/pinchazo-globo-revienta-.mp3"))
+except pygame.error as e:
+    explosion_sound = None
+    print(f"No se pudo cargar el sonido de explosión: {e}")
 
 # Definir las dimensiones de la pantalla
 ANCHO_PANTALLA = 800
 ALTO_PANTALLA = 600
 
 # Cargar la imagen de fondo
-fondo = pygame.image.load(os.path.join(base_path, "assets/foto fondo videojuego.jpg"))
+fondo = pygame.image.load(resource_path("assets/foto fondo videojuego.jpg"))
 fondo = pygame.transform.scale(fondo, (ANCHO_PANTALLA, ALTO_PANTALLA))
 
 # Definir la clase para los globos
@@ -66,11 +65,11 @@ class Globo(pygame.sprite.Sprite):
         self.color = random.choice([AZUL, VERDE, ROJO])
         # Cargar la imagen del globo según el color
         if self.color == AZUL:
-            self.image = pygame.image.load(os.path.join(base_path, "assets/Globo azul sin fondo.png")).convert_alpha()
+            self.image = pygame.image.load(resource_path("assets/Globo azul sin fondo.png")).convert_alpha()
         elif self.color == VERDE:
-            self.image = pygame.image.load(os.path.join(base_path, "assets/Globo verde.png")).convert_alpha()
+            self.image = pygame.image.load(resource_path("assets/Globo verde.png")).convert_alpha()
         elif self.color == ROJO:
-            self.image = pygame.image.load(os.path.join(base_path, "assets/Globo rojo.png")).convert_alpha()
+            self.image = pygame.image.load(resource_path("assets/Globo rojo.png")).convert_alpha()
         # Escalar la imagen del globo
         self.image = pygame.transform.scale(self.image, (50, 50))  # Ajusta el tamaño según sea necesario
         self.rect = self.image.get_rect()
